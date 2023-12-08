@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume Similarity Analyzer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h1>Resume Similarity Analyzer</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <label for="job_description">Upload Job Description (PDF)</label><br>
+        <input type="file" id="job_description" name="job_description" accept=".pdf" required>
+        <br><br>
+        <label for="resumes">Upload Resumes (PDF, multiple)</label><br>
+        <input type="file" id="resumes" name="resumes[]" multiple accept=".pdf" required>
+        <br>
+        <button type="button" onclick="analyze()">Analyze Resumes</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        function analyze() {
+            var form = document.getElementById('uploadForm');
+            var formData = new FormData(form);
+
+            fetch('/analyze_resumes', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display resume names and scores line by line
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = ''; // Clear previous results
+
+                if (data.hasOwnProperty('resume') && data.hasOwnProperty('scores')) {
+                    const resumes = data.resume;
+                    const scores = data.scores;
+
+                    for (let i = 0; i < resumes.length; i++) {
+                        const div = document.createElement('div');
+                        div.textContent = `Resume: ${resumes[i]}, Score: ${scores[i]}`;
+                        resultDiv.appendChild(div);
+                    }
+                } else {
+                
+                    resultDiv.textContent = 'No data available or an error occurred.';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
